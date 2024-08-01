@@ -28,7 +28,7 @@ namespace SpatialGrids
         public bool FindWithForce = true; //暴力查找的方式
         private void Start()
         {
-            testGrid=new SpatialHashGrid(gridBounds,new Vector2(rows,col));
+            testGrid=new SpatialHashGrid(gridBounds,rows,col);
             for (int i = 0; i < moveClientNum; i++)
             {
                 var go = Instantiate(moveClientPrefab);
@@ -64,7 +64,7 @@ namespace SpatialGrids
             var searchBounds = new Bounds(pos, PlayerSize);
             if (FindWithForce)
             {
-                result = new HashSet<GridClient>();
+                result = new List<GridClient>();
                 foreach (var testUnit in _testUnits)
                 {
                     if (searchBounds.Contains(testUnit.gridClient.position))
@@ -82,7 +82,7 @@ namespace SpatialGrids
             // Debug.Log("findCount "+ result.Count);
         }
 
-        private HashSet<GridClient> result = new HashSet<GridClient>();
+        private List<GridClient> result = new List<GridClient>();
         private void OnDrawGizmos()
         {
             var prevColor = Gizmos.color;

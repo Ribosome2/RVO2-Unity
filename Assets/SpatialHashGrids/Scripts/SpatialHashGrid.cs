@@ -11,18 +11,22 @@ namespace SpatialGrids
 		public Vector2 position;   
 		public Vector2 dimensions; //width and height
 		public int[] gridRange=new int[4];  //占的格子索引范围，0，1是x的区间，2 3是y的区间
+		public int queryId = 0;
 	}
 
 	public class SpatialHashGrid
 	{
 		public Bounds Bounds;
-		public Vector2 Dimensions; //划分为几行几列
-		public Dictionary<string, List<GridClient>> cells=new Dictionary<string, List<GridClient>>();
+		public int DimensionsRow; //划分为几行几列
+		public int DimensionsCol; //划分为几行几列
+		public Dictionary<int, List<GridClient>> cells=new Dictionary<int, List<GridClient>>();
+		private int _queryId = 0;
 
-		public SpatialHashGrid(Bounds bounds, Vector2 dimensions)
+		public SpatialHashGrid(Bounds bounds, int row,int col)
 		{
 			this.Bounds = bounds;
-			this.Dimensions = dimensions;
+			this.DimensionsRow = row;
+			this.DimensionsCol = col;
 		}
 
 		public GridClient NewClient(Vector2 position, Vector2 dimensions)
@@ -72,21 +76,21 @@ namespace SpatialGrids
 
 		}
 
-		private string _Key(int xIndex, int yIndex)
+		private int _Key(int xIndex, int yIndex)
 		{
-			return xIndex + "." + yIndex;
+			return xIndex*this.DimensionsRow + yIndex;
 		}
 
 		private void _GetCellIndex(float x, float y,out int xIndex,out int yIndex)
 		{
 			var factorX = (x - this.Bounds.min.x) / this.Bounds.size.x;
-			xIndex = Mathf.FloorToInt(factorX * this.Dimensions.x);
+			xIndex = Mathf.FloorToInt(factorX * this.DimensionsCol);
 			
 			var factorY = (y - this.Bounds.min.y) / this.Bounds.size.y;
-			yIndex = Mathf.FloorToInt(factorY * this.Dimensions.y);
+			yIndex = Mathf.FloorToInt(factorY * this.DimensionsRow);
 		}
 
-		public HashSet<GridClient> FindNear(Vector2 position, Bounds bound)
+		public List<GridClient> FindNear(Vector2 position, Bounds bound)
 		{
 			float x = position.x;
 			float y = position.y;
@@ -99,7 +103,8 @@ namespace SpatialGrids
 			int maxY;
 			this._GetCellIndex(x - w / 2, y - h / 2, out minX, out minY); //用Client左下角取到的做索引
 			this._GetCellIndex(x + w / 2, y + h / 2, out maxX, out maxY); //用Client右上角取到的索引
-			HashSet<GridClient> clients = new HashSet<GridClient>();
+			List<GridClient> clients = new List<GridClient>();
+			this._queryId++;
 
 			for (int xIndex = minX; xIndex < maxX; xIndex++)
 			{
@@ -110,7 +115,11 @@ namespace SpatialGrids
 					{
 						foreach (var gridClient in this.cells[key])
 						{
-							clients.Add(gridClient);
+							if (gridClient.queryId != _queryId)
+							{
+								gridClient.queryId = _queryId;
+								clients.Add(gridClient);
+							}
 						}
 					}
 				}
