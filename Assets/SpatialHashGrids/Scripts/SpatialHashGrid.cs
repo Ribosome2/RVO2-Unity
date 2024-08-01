@@ -56,11 +56,12 @@ namespace SpatialGrids
 			this._GetCellIndex(x - w / 2, y - h / 2,out  minX,out  minY ); //用Client左下角取到的做索引
 			this._GetCellIndex(x + w / 2, y + h / 2,out maxX,out maxY); //用Client右上角取到的索引
 
-			for (int xIndex = minX; xIndex < maxX; xIndex++)
+			for (int xIndex = minX; xIndex <= maxX; xIndex++)
 			{
-				for (int yIndex = minY; yIndex < maxY; yIndex++)
+				for (int yIndex = minY; yIndex <= maxY; yIndex++)
 				{
 					var key = this._Key(xIndex, yIndex);
+					// Debug.Log("x "+x+" y "+y+"  xIndex  "+xIndex+" yIndex"+yIndex + "key"+key);
 					if (cells.ContainsKey(key) == false)
 					{
 						cells[key] = new List<GridClient>();
@@ -71,17 +72,17 @@ namespace SpatialGrids
 
 			client.gridRange[0] = minX;
 			client.gridRange[1] = maxX;
-			client.gridRange[2] = maxY;
+			client.gridRange[2] = minX;
 			client.gridRange[3] = maxY;
 
 		}
 
-		private int _Key(int xIndex, int yIndex)
+		public int _Key(int xIndex, int yIndex)
 		{
-			return xIndex*this.DimensionsRow + yIndex;
+			return yIndex*this.DimensionsCol + xIndex;
 		}
 
-		private void _GetCellIndex(float x, float y,out int xIndex,out int yIndex)
+		public void _GetCellIndex(float x, float y,out int xIndex,out int yIndex)
 		{
 			var factorX = (x - this.Bounds.min.x) / this.Bounds.size.x;
 			xIndex = Mathf.FloorToInt(factorX * this.DimensionsCol);
@@ -89,6 +90,7 @@ namespace SpatialGrids
 			var factorY = (y - this.Bounds.min.y) / this.Bounds.size.y;
 			yIndex = Mathf.FloorToInt(factorY * this.DimensionsRow);
 		}
+		
 
 		public List<GridClient> FindNear(Vector2 position, Bounds bound)
 		{
@@ -106,16 +108,16 @@ namespace SpatialGrids
 			List<GridClient> clients = new List<GridClient>();
 			this._queryId++;
 
-			for (int xIndex = minX; xIndex < maxX; xIndex++)
+			for (int xIndex = minX; xIndex <= maxX; xIndex++)
 			{
-				for (int yIndex = minY; yIndex < maxY; yIndex++)
+				for (int yIndex = minY; yIndex <= maxY; yIndex++)
 				{
 					var key = this._Key(xIndex, yIndex);
 					if (cells.ContainsKey(key))
 					{
 						foreach (var gridClient in this.cells[key])
 						{
-							if (gridClient.queryId != _queryId)
+							if (gridClient.queryId != _queryId) //额外用一个每次查询都会变化的id来避免了使用set来避免重复
 							{
 								gridClient.queryId = _queryId;
 								clients.Add(gridClient);
@@ -130,6 +132,8 @@ namespace SpatialGrids
 
 		public void UpdateClient(GridClient client)
 		{
+			//todo:在执行更新前，先判断单曲坐标是否跟之前的坐标算出来的结果 格子索引是不是一致的，如果一致就没有必要执行更新了
+			
 			this.RemoveClient(client);
 			this._Insert(client);
 		}
