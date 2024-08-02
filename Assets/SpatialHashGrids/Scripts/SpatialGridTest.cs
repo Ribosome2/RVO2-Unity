@@ -17,11 +17,13 @@ namespace SpatialGrids
         public int moveClientNum = 60;
         public GameObject PlayerGo;
         public Vector3 PlayerSize=new Vector3(3,3,1);
+        public float MoveSpeed;
 
         class  TestUnit
         {
-            public GameObject go;
+            public Transform Trans;
             public GridClient gridClient;
+            public Vector2 moveDir;
         }
 
         private List<TestUnit> _testUnits = new List<TestUnit>();
@@ -29,6 +31,7 @@ namespace SpatialGrids
         public bool FindNearEveryFrame = true;
         public bool FindWithForce = true; //暴力查找的方式
         public Text txtInfo;
+        public bool AutoMove = true;
         private void Start()
         {
             testGrid=new SpatialHashGrid(gridBounds,rows,col);
@@ -39,11 +42,14 @@ namespace SpatialGrids
                     Random.Range(gridBounds.min.y, gridBounds.max.y));
 
                 GridClient client = testGrid.NewClient(go.transform.position, new Vector2(1, 1));
-                _testUnits.Add(new TestUnit()
+                var unit = new TestUnit()
                 {
-                    go=go,
-                    gridClient = client
-                });
+                    Trans = go.transform,
+                    gridClient = client,
+                    moveDir = Random.insideUnitCircle,
+                    
+                };
+                _testUnits.Add(unit);
                
             }
         }
@@ -64,6 +70,44 @@ namespace SpatialGrids
                 FindNearTest();
             }
 
+            if (AutoMove)
+            {
+                MoveUnits();
+                if (!FindWithForce)
+                {
+                    SyncGridClient();
+                }
+            }
+        }
+
+        private void SyncGridClient()
+        {
+            foreach (var testUnit in _testUnits)
+            {
+                testGrid.UpdateClient(testUnit.gridClient);
+            }
+        }
+
+        private void MoveUnits()
+        {
+            foreach (var testUnit in _testUnits)
+            {
+                var moveVec = Time.deltaTime * testUnit.moveDir * MoveSpeed;
+                var newPos =testUnit.Trans.position + new Vector3(moveVec.x,moveVec.y,0);
+                if (newPos.x < gridBounds.min.x || newPos.x>gridBounds.max.x)
+                {
+                    testUnit.moveDir.x = -testUnit.moveDir.x;
+                    newPos.x = Mathf.Clamp(newPos.x,gridBounds.min.x, gridBounds.max.x);
+                }
+                if (newPos.y < gridBounds.min.y || newPos.y>gridBounds.max.y)
+                {
+                    testUnit.moveDir.y = -testUnit.moveDir.y;
+                    newPos.y = Mathf.Clamp(newPos.y,gridBounds.min.y, gridBounds.max.y);
+                }
+                
+                testUnit.Trans.position = newPos;
+                testUnit.gridClient.position = testUnit.Trans.position;
+            }
             
         }
 
@@ -81,7 +125,7 @@ namespace SpatialGrids
             {
                 foreach (var testUnit in _testUnits)
                 {
-                    if (searchBounds.Contains(testUnit.gridClient.position))
+                    if (CheckCollide(searchBounds,testUnit.gridClient))
                     {
                         result.Add(testUnit.gridClient);
                     }
@@ -94,7 +138,7 @@ namespace SpatialGrids
                 //FindNear找到的只是包含的大格子，还需要对粗略结果进行判断
                 foreach (var gridClient in rawResult)
                 {
-                    if (searchBounds.Contains(gridClient.position))
+                    if (CheckCollide(searchBounds,gridClient))
                     {
                         result.Add(gridClient);
                     }
@@ -102,6 +146,13 @@ namespace SpatialGrids
             }
          
             // Debug.Log("findCount "+ result.Count);
+        }
+
+        bool CheckCollide(Bounds checkBound,GridClient gridClient)
+        {
+            Bounds clientBound = new Bounds(gridClient.position,
+                new Vector3(gridClient.dimensions.x, gridClient.dimensions.y, 1));
+            return checkBound.Intersects(clientBound);
         }
 
         private List<GridClient> result = new List<GridClient>();

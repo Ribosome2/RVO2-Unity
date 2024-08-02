@@ -14,6 +14,12 @@ namespace SpatialGrids
 		public int queryId = 0;
 	}
 
+	/// <summary>
+	/// 这种方案和直接遍历所有的对比，跟一些因素有关
+	/// 1.是否需要经常更新，如果GridClient 基本不动，那这个方案查询会快很多
+	/// 2.总的GridClient的数量和格子的大小划分，格子分太大会起不到划分效果，太小又会导致Update格子太频繁
+	/// 3.查询的时候的，的Rect的范围，查询的区域覆盖的大格子越多，分区起到的效果就越小
+	/// </summary>
 	public class SpatialHashGrid
 	{
 		public Bounds Bounds;
@@ -72,7 +78,7 @@ namespace SpatialGrids
 
 			client.gridRange[0] = minX;
 			client.gridRange[1] = maxX;
-			client.gridRange[2] = minX;
+			client.gridRange[2] = minY;
 			client.gridRange[3] = maxY;
 
 		}
@@ -92,13 +98,13 @@ namespace SpatialGrids
 		}
 		
 
-		public List<GridClient> FindNear(Vector2 position, Bounds bound)
+		public List<GridClient> FindNear(Vector2 position, Bounds rect)
 		{
 			float x = position.x;
 			float y = position.y;
 
-			float w = bound.size.x;
-			float h = bound.size.y;
+			float w = rect.size.x;
+			float h = rect.size.y;
 			int minX;
 			int minY;
 			int maxX;
@@ -132,7 +138,23 @@ namespace SpatialGrids
 
 		public void UpdateClient(GridClient client)
 		{
-			//todo:在执行更新前，先判断单曲坐标是否跟之前的坐标算出来的结果 格子索引是不是一致的，如果一致就没有必要执行更新了
+			float x = client.position.x;
+			float y = client.position.y;
+			
+			float halfW = client.dimensions.x;
+			float halfH = client.dimensions.y;
+			int minX;
+			int minY;
+			int maxX;
+			int maxY;
+			this._GetCellIndex(x - halfW, y - halfH,out  minX,out  minY ); //用Client左下角取到的做索引
+			this._GetCellIndex(x + halfW, y + halfH,out maxX,out maxY); //用Client右上角取到的索引
+			if (minX == client.gridRange[0] && maxX == client.gridRange[1] &&
+			    minY == client.gridRange[2] && maxY == client.gridRange[3])
+			{
+				return;
+			}
+			
 			
 			this.RemoveClient(client);
 			this._Insert(client);

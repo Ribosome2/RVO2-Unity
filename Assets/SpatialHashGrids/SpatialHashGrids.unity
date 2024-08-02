@@ -453,16 +453,18 @@ MonoBehaviour:
   gridBounds:
     m_Center: {x: 0, y: 0, z: 0}
     m_Extent: {x: 100, y: 50, z: 0.5}
-  rows: 10
-  col: 10
-  moveClientNum: 5000
+  rows: 30
+  col: 30
+  moveClientNum: 1000
   PlayerGo: {fileID: 815733306}
   PlayerSize: {x: 3, y: 3, z: 1}
+  MoveSpeed: 3
   moveClientPrefab: {fileID: 1304494330983994, guid: 8b8c96c131838a84e99ea3b18fd1e9b1,
     type: 2}
   FindNearEveryFrame: 1
   FindWithForce: 0
   txtInfo: {fileID: 310519556}
+  AutoMove: 0
 --- !u!1001 &1910264124
 Prefab:
   m_ObjectHideFlags: 0
