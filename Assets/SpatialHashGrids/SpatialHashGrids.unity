@@ -453,9 +453,9 @@ MonoBehaviour:
   gridBounds:
     m_Center: {x: 0, y: 0, z: 0}
     m_Extent: {x: 100, y: 50, z: 0.5}
-  rows: 30
-  col: 30
-  moveClientNum: 1000
+  rows: 10
+  col: 10
+  moveClientNum: 200
   PlayerGo: {fileID: 815733306}
   PlayerSize: {x: 3, y: 3, z: 1}
   MoveSpeed: 3
@@ -464,7 +464,8 @@ MonoBehaviour:
   FindNearEveryFrame: 1
   FindWithForce: 0
   txtInfo: {fileID: 310519556}
-  AutoMove: 0
+  AutoMove: 1
+  FightNearCount: 10
 --- !u!1001 &1910264124
 Prefab:
   m_ObjectHideFlags: 0

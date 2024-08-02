@@ -32,6 +32,7 @@ namespace SpatialGrids
         public bool FindWithForce = true; //暴力查找的方式
         public Text txtInfo;
         public bool AutoMove = true;
+        public int FightNearCount = 5; //每帧要查询多少次，因为实际上不大可能只有一次查询，
         private void Start()
         {
             testGrid=new SpatialHashGrid(gridBounds,rows,col);
@@ -67,7 +68,10 @@ namespace SpatialGrids
             
             if (FindNearEveryFrame)
             {
-                FindNearTest();
+                for (int i = 0; i < FightNearCount; i++)
+                {
+                    FindNearTest();
+                }
             }
 
             if (AutoMove)

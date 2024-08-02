@@ -62,6 +62,11 @@ namespace SpatialGrids
 			this._GetCellIndex(x - w / 2, y - h / 2,out  minX,out  minY ); //用Client左下角取到的做索引
 			this._GetCellIndex(x + w / 2, y + h / 2,out maxX,out maxY); //用Client右上角取到的索引
 
+			UpdateGridState(client, minX, maxX, minY, maxY);
+		}
+
+		private void UpdateGridState(GridClient client, int minX, int maxX, int minY, int maxY)
+		{
 			for (int xIndex = minX; xIndex <= maxX; xIndex++)
 			{
 				for (int yIndex = minY; yIndex <= maxY; yIndex++)
@@ -80,7 +85,6 @@ namespace SpatialGrids
 			client.gridRange[1] = maxX;
 			client.gridRange[2] = minY;
 			client.gridRange[3] = maxY;
-
 		}
 
 		public int _Key(int xIndex, int yIndex)
@@ -141,8 +145,8 @@ namespace SpatialGrids
 			float x = client.position.x;
 			float y = client.position.y;
 			
-			float halfW = client.dimensions.x;
-			float halfH = client.dimensions.y;
+			float halfW = client.dimensions.x/2;
+			float halfH = client.dimensions.y/2;
 			int minX;
 			int minY;
 			int maxX;
@@ -157,7 +161,8 @@ namespace SpatialGrids
 			
 			
 			this.RemoveClient(client);
-			this._Insert(client);
+			UpdateGridState(client, minX, maxX, minY, maxY);
+			// this._Insert(client);
 		}
 
 		private void RemoveClient(GridClient client)
