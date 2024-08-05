@@ -33,3 +33,5 @@ sysinfo.txt
 *.apk
 *.unitypackage
 .idea/
+Logs/
+UserSettings/
