@@ -25,7 +25,7 @@ namespace SpatialGrids
 		public Bounds Bounds;
 		public int DimensionsRow; //划分为几行几列
 		public int DimensionsCol; //划分为几行几列
-		public Dictionary<int, List<GridClient>> cells=new Dictionary<int, List<GridClient>>();
+		public Dictionary<int, LinkedList<GridClient>> cells=new Dictionary<int, LinkedList<GridClient>>();
 		private int _queryId = 0;
 
 		public SpatialHashGrid(Bounds bounds, int row,int col)
@@ -75,9 +75,9 @@ namespace SpatialGrids
 					// Debug.Log("x "+x+" y "+y+"  xIndex  "+xIndex+" yIndex"+yIndex + "key"+key);
 					if (cells.ContainsKey(key) == false)
 					{
-						cells[key] = new List<GridClient>();
+						cells[key] = new LinkedList<GridClient>();
 					}
-					this.cells[key].Add(client);
+					this.cells[key].AddLast(client);
 				}
 			}
 
